@@ -54,7 +54,6 @@ void loop()
   if (millis() > next_timestamp )    
   { 
     detachInterrupt(input_pin); 
-    next_timestamp  = millis()+1000; //intervall is 1s
     float rps = i/number_reed; //computing rounds per second 
     if(i == 0)
       wind = 0.0;
@@ -66,6 +65,7 @@ void loop()
       Serial.println(" km/h");
     }
     i = 0;
+    next_timestamp  = millis()+1000; //intervall is 1s
     attachInterrupt(input_pin,Interrupt,RISING);
   }
 }
