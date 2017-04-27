@@ -15,7 +15,6 @@ void setup() {
   Serial.begin(115200);
   delay(10);
   pinMode(input_pin, INPUT_PULLUP);//D3
-  attachInterrupt(input_pin,Interrupt,RISING);
   // We start by connecting to a WiFi network
   if(debugOutput){
     Serial.println();
@@ -37,6 +36,8 @@ void setup() {
   }
   delay(500);
    //do_update();
+  
+  attachInterrupt(input_pin,Interrupt,RISING);
 }
 
 
