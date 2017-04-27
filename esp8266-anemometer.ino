@@ -1,8 +1,9 @@
-
 #include <ESP8266WiFi.h>
 #include "myconfig.h"
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
+#include <PubSubClient.h>
+
 
 unsigned long  next_timestamp = 0;
 volatile unsigned long i = 0;
@@ -10,6 +11,10 @@ float wind = 0;
 volatile unsigned long last_micros;
 long debouncing_time = 5; //in millis
 int input_pin = 13;
+char charBuffer[32];
+
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 void setup() {
   Serial.begin(115200);
@@ -35,8 +40,9 @@ void setup() {
     Serial.println(WiFi.localIP());
   }
   delay(500);
-   //do_update();
-  
+  do_update();
+  client.setServer(mqtt_host, mqtt_port);
+  reconnect();
   attachInterrupt(input_pin,Interrupt,RISING);
 }
 
@@ -65,24 +71,44 @@ void loop()
       Serial.print(wind);
       Serial.println(" km/h");
     }
+    String strBuffer;
+    strBuffer =  String(wind);
+    strBuffer.toCharArray(charBuffer,10);
+    client.publish(mqtt_topic_prefix, charBuffer, false);
     i = 0;
     next_timestamp  = millis()+1000; //intervall is 1s
     attachInterrupt(input_pin,Interrupt,RISING);
   }
 }
 
+void reconnect() {
+  while (!client.connected()) {
+    if(debugOutput) Serial.print("Attempting MQTT connection...");
+    if (client.connect(mqtt_id)) {
+      if(debugOutput) Serial.println("connected");
+    } else {
+      if(debugOutput){ 
+        Serial.print("failed, rc=");
+        Serial.print(client.state());
+        Serial.println(" try again in 5 seconds");
+      }
+      delay(5000);
+    }
+  }
+}
+
 void do_update(){
-  Serial.println("do update");
+  if(debugOutput) Serial.println("do update");
   t_httpUpdate_return ret = ESPhttpUpdate.update(update_server, 80, update_uri, firmware_version);
   switch(ret) {
     case HTTP_UPDATE_FAILED:
-        Serial.println("[update] Update failed.");
+        if(debugOutput) Serial.println("[update] Update failed.");
         break;
     case HTTP_UPDATE_NO_UPDATES:
-        Serial.println("[update] no Update needed");
+        if(debugOutput )Serial.println("[update] no Update needed");
         break;
     case HTTP_UPDATE_OK:
-        Serial.println("[update] Update ok."); // may not called we reboot the ESP
+        if(debugOutput) Serial.println("[update] Update ok."); // may not called we reboot the ESP
         break;
   }
 }
