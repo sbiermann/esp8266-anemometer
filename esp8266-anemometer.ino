@@ -21,7 +21,7 @@ PubSubClient client(espClient);
 void setup() {
   Serial.begin(115200);
   delay(10);
-  pinMode(input_pin, INPUT_PULLUP);//D3
+  pinMode(input_pin, INPUT_PULLUP);//D7
   // We start by connecting to a WiFi network
   if(debugOutput){
     Serial.println();
