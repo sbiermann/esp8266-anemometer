@@ -100,6 +100,7 @@ void loop()
 }
 
 void reconnect() {
+  int maxWait = 0;
   while (!client.connected()) {
     if(debugOutput) Serial.print("Attempting MQTT connection...");
     if (client.connect(mqtt_id)) {
@@ -111,6 +112,9 @@ void reconnect() {
         Serial.println(" try again in 5 seconds");
       }
       delay(5000);
+      if(maxWait > 10)
+        ESP.restart();
+      maxWait++;
     }
   }
 }
