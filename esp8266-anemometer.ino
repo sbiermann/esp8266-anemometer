@@ -30,10 +30,13 @@ void setup() {
     Serial.println(ssid);
   }
   WiFi.begin(ssid, password);
-  
+  int maxWait = 500;
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     if(debugOutput) Serial.print(".");
+    if(maxWait <= 0)
+     ESP.restart();
+    maxWait--;
   }
   if(debugOutput){
     Serial.println("");
@@ -78,11 +81,19 @@ void loop()
       String strBuffer;
       strBuffer =  String(wind);
       strBuffer.toCharArray(charBuffer,10);
-      client.publish(mqtt_topic_prefix, charBuffer, false);
+      if (!client.publish(mqtt_topic_prefix, charBuffer, false))
+      {
+        ESP.restart();
+        delay(100);
+      }
       count = 0;
     }
     i = 0;
     last_wind = wind;
+    if(WiFi.status() != WL_CONNECTED) {
+      ESP.restart();
+      delay(100);
+    }
     next_timestamp  = millis()+1000; //intervall is 1s
     attachInterrupt(input_pin,Interrupt,RISING);
   }
