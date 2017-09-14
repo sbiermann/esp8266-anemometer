@@ -29,6 +29,8 @@ void setup() {
     Serial.print("Connecting to ");
     Serial.println(ssid);
   }
+  WiFi.persistent(false);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   int maxWait = 500;
   while (WiFi.status() != WL_CONNECTED) {
@@ -72,7 +74,7 @@ void loop()
       wind = 0.0;
     else
       wind = 1.761 / (1 + rps) + 3.013 * rps;// found here: https://www.amazon.de/gp/customer-reviews/R3C68WVOLJ7ZTO/ref=cm_cr_getr_d_rvw_ttl?ie=UTF8&ASIN=B0018LBFG8 (in German)
-    if(last_wind - wind > 1 || wind - last_wind < -1 || count >= 10){
+    if(last_wind - wind > 0.8 || last_wind - wind < -0.8 || count >= 10){
       if(debugOutput){
         Serial.print("Wind: ");
         Serial.print(wind);
@@ -97,6 +99,7 @@ void loop()
     next_timestamp  = millis()+1000; //intervall is 1s
     attachInterrupt(input_pin,Interrupt,RISING);
   }
+  yield();
 }
 
 void reconnect() {
