@@ -18,6 +18,14 @@ char charBuffer[32];
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+void ICACHE_RAM_ATTR Interrupt()
+{
+  if((long)(micros() - last_micros) >= debouncing_time * 1000) {
+    i++;
+    last_micros = micros();
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   delay(10);
@@ -53,15 +61,6 @@ void setup() {
   attachInterrupt(input_pin,Interrupt,RISING);
 }
 
-
-
-void Interrupt()
-{
-  if((long)(micros() - last_micros) >= debouncing_time * 1000) {
-    i++;
-    last_micros = micros();
-  }
-}
 
 void loop() 
 {
